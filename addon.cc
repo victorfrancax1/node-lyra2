@@ -22,8 +22,8 @@ NAN_METHOD(Hash) {
   // double est = Estimate(points);
   // Isolate* isolate = info.GetIsolate();
 
-  if (info.Length() < 5) {
-    Nan::ThrowError("Wrong number of arguments. Expected 5");
+  if (info.Length() < 6) {
+    Nan::ThrowError("Wrong number of arguments. Expected 6");
     return;
   }
 
@@ -31,25 +31,32 @@ NAN_METHOD(Hash) {
   Local<Object> salt_buffer = info[1]->ToObject();
 
   if (!info[2]->IsNumber()) {
-    Nan::ThrowError("Argument 3 should be a number (T)");
+    Nan::ThrowError("Argument 2 should be a number (kLen)");
     return;
   }
 
-  int t = info[2]->NumberValue();
+  int kLen = info[2]->NumberValue();
 
   if (!info[3]->IsNumber()) {
-    Nan::ThrowError("Argument 4 should be a number (R)");
+    Nan::ThrowError("Argument 4 should be a number (T)");
     return;
   }
 
-  int r = info[3]->NumberValue();
+  int t = info[3]->NumberValue();
 
   if (!info[4]->IsNumber()) {
-    Nan::ThrowError("Argument 5 should be a number (C)");
+    Nan::ThrowError("Argument 5 should be a number (R)");
     return;
   }
 
-  int c = info[4]->NumberValue();
+  int r = info[4]->NumberValue();
+
+  if (!info[5]->IsNumber()) {
+    Nan::ThrowError("Argument 6 should be a number (C)");
+    return;
+  }
+
+  int c = info[5]->NumberValue();
 
   void * password = node::Buffer::Data(password_buffer);
   void * salt = node::Buffer::Data(salt_buffer);
@@ -57,10 +64,10 @@ NAN_METHOD(Hash) {
   uint32_t password_len = node::Buffer::Length(password_buffer);
   uint32_t salt_len = node::Buffer::Length(salt_buffer);
 
-  Local<Object> output_buffer = Nan::NewBuffer(32).ToLocalChecked();
+  Local<Object> output_buffer = Nan::NewBuffer(kLen).ToLocalChecked();
   void * output = node::Buffer::Data(output_buffer);
 
-  int result = LYRA2(output, 32, password, password_len, salt, salt_len, t, r, c);
+  int result = LYRA2(output, kLen, password, password_len, salt, salt_len, t, r, c);
 
   if (result != 0) {
     Nan::ThrowError("Non-zero return code from LYRA2");
